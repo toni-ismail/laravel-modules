@@ -85,6 +85,7 @@ class ModelMakeCommand extends GeneratorCommand
     {
         return [
             ['fillable', null, InputOption::VALUE_OPTIONAL, 'The fillable attributes.', null],
+            ['tablename', null, InputOption::VALUE_OPTIONAL, 'The Table Name attributes.', null],
             ['migration', 'm', InputOption::VALUE_NONE, 'Flag to create associated migrations', null],
         ];
     }
@@ -106,7 +107,7 @@ class ModelMakeCommand extends GeneratorCommand
     protected function getTemplateContents()
     {
         $module = $this->laravel['modules']->findOrFail($this->getModuleName());
-
+        $tablename = $this->getTableName();
         return (new Stub('/model.stub', [
             'NAME'              => $this->getModelName(),
             'FILLABLE'          => $this->getFillable(),
@@ -115,6 +116,7 @@ class ModelMakeCommand extends GeneratorCommand
             'LOWER_NAME'        => $module->getLowerName(),
             'MODULE'            => $this->getModuleName(),
             'STUDLY_NAME'       => $module->getStudlyName(),
+            'TABLENAME'         => $tablename,
             'MODULE_NAMESPACE'  => $this->laravel['modules']->config('namespace'),
         ]))->render();
     }
@@ -140,6 +142,15 @@ class ModelMakeCommand extends GeneratorCommand
     }
 
     /**
+     * @return mixed|string
+     */
+    private function getTableName()
+    {
+        $tableName = $this->option('tablename');
+        return "'".$tableName."'";
+    }
+
+    /**
      * @return string
      */
     private function getFillable()
@@ -162,8 +173,6 @@ class ModelMakeCommand extends GeneratorCommand
      */
     public function getDefaultNamespace() : string
     {
-        $module = $this->laravel['modules'];
-
-        return $module->config('paths.generator.model.namespace') ?: $module->config('paths.generator.model.path', 'Entities');
+        return $this->laravel['modules']->config('paths.generator.model.path', 'Entities');
     }
 }
